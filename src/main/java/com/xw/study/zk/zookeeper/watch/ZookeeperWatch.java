@@ -1,6 +1,5 @@
 package com.xw.study.zk.zookeeper.watch;
 
-import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.zookeeper.CreateMode;
@@ -16,7 +15,7 @@ import org.apache.zookeeper.data.Stat;
 public class ZookeeperWatch implements Watcher {
 
 	// 连接地址
-	static String CONNECT_ADDR = "192.168.110.97:2181";
+	static String CONNECT_ADDR = "127.0.0.1:2181";
 	// 会话超时时间
 	static int SESSION_OUTTIME = 5000;
 	
@@ -35,7 +34,7 @@ public class ZookeeperWatch implements Watcher {
 		
 		
 		System.out.println("-----------------------------------------【创建父节点】");
-		// 创建父节点  
+		// 创建父节点，原生api不支持递归创建和递归删除
 		/**
 		 * 事件状态：【SyncConnected】,事件类型：【None】，path:null
 		 */
@@ -148,8 +147,8 @@ public class ZookeeperWatch implements Watcher {
 
 	@Override
 	public void process(WatchedEvent event) {
-		KeeperState state = event.getState();// 事件状态
-		EventType type = event.getType();// 事件类型
+		KeeperState state = event.getState();// 状态类型，和客户端实例相关的
+		EventType type = event.getType();// 事件类型，znode节点相关的
 		String path = event.getPath();// 事件发生的path
 		
 		if (KeeperState.SyncConnected == state) {// 事件类型为异步连接时
