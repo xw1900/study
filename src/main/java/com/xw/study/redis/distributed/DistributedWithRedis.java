@@ -1,4 +1,4 @@
-package com.xw.study.thread.distributed;
+package com.xw.study.redis.distributed;
 
 import java.util.UUID;
 
