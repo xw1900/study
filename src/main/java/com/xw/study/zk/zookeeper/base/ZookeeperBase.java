@@ -19,7 +19,7 @@ import org.apache.zookeeper.ZooKeeper;
 public class ZookeeperBase {
 
 	// 连接地址
-	static String CONNECT_ADDR = "192.168.10.12:2181,192.168.10.13:2181,192.168.10.14:2181";
+	static String CONNECT_ADDR = "192.168.110.97:2181";
 	// 会话超时时间
 	static int SESSION_OUTTIME = 5000;
 	
@@ -27,7 +27,6 @@ public class ZookeeperBase {
 
 	public static void main(String[] args) throws Exception {
 		ZooKeeper zk = new ZooKeeper(CONNECT_ADDR, SESSION_OUTTIME, new Watcher() {
-
 			@Override
 			public void process(WatchedEvent event) {
 				EventType type = event.getType();
@@ -43,15 +42,20 @@ public class ZookeeperBase {
 		latch.await();
 		// 创建节点
 		zk.create("/xw", "TESTDATA".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+		zk.create("/xw/xw1", "TESTDATA1".getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 		// 获取数据
-		System.out.println(new String(zk.getData("/xw", false, null)));
+		System.out.println(new String(zk.getData("/xw", false, null)));// TESTDATA
 		// 设置数据
-		zk.setData("/xw", "TESTDATA1".getBytes(), -1);
-		System.out.println(new String(zk.getData("/xw", false, null)));
-		// 判断节点是否存在
-		System.out.println(zk.exists("/xw", false));
-		// 删除节点
+		zk.setData("/xw", "TESTDATA1".getBytes(), -1);// -1：版本号，-1表示无视版本，直接改掉
+		System.out.println(new String(zk.getData("/xw", false, null)));// TESTDATA1
+		// 判断节点是否存在，返回节点信息，创建修改时间等
+		System.out.println(zk.exists("/xw", false));// 20,22,1528095405958,1528095405969,1,1,0,0,9,1,21
+		// 获取所有的子节点
+		System.out.println(zk.getChildren("/xw", false));// [xw1]
+		// 删除节点，有子节点不能用此api删除
+		zk.delete("/xw/xw1", -1);
 		zk.delete("/xw", -1);
+		System.out.println(zk.exists("/xw", false));// null
 		zk.close();
 	}
 
