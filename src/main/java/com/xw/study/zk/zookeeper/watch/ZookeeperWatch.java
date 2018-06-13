@@ -39,47 +39,48 @@ public class ZookeeperWatch implements Watcher {
 		 * 事件状态：【SyncConnected】,事件类型：【None】，path:null
 		 */
 		zk.exists(PARENT_NODE, true);// 使用默认的watch监听
+		zk.getChildren(PARENT_NODE, true);
 		watch.createNode(PARENT_NODE, "parent-data");
 		
 		
-		System.out.println("-----------------------------------------【创建子节点】");
-		// 创建子节点 
-		/**
-		 * 事件状态：【SyncConnected】,事件类型：【NodeCreated】，path:/parent-node/children-node
-		 */
-		zk.exists(CHILDREN_NODE, true);// 使用默认的watch监听
-		watch.createNode(CHILDREN_NODE, "children-data");
-		
-		
-		System.out.println("-----------------------------------------【设置数据】");
-		// 设置数据
-		/**
-		 * 数据watch(data  watches)：getData()和exists()都可以设置数据watch
-		 * 事件状态：【SyncConnected】,事件类型：【NodeDataChanged】，path:/parent-node
-		 */
-		// zk.exists(path, true);// 也可以监听数据变化
-		zk.getData(PARENT_NODE, true, null);
-		watch.setData(PARENT_NODE, "parent-data-change");
-		
-		
-		System.out.println("-----------------------------------------【删除子节点】");
-		// 删除子节点 
-		/**
-		 * 事件状态：【SyncConnected】,事件类型：【NodeDeleted】，path:/parent-node/children-node
-		 * 事件状态：【SyncConnected】,事件类型：【NodeChildrenChanged】，path:/parent-node
-		 */
-		zk.getData(CHILDREN_NODE, true, null);
-		zk.getChildren(PARENT_NODE, true);
-		watch.deleteNodes(CHILDREN_NODE);
-		
-		
-		System.out.println("-----------------------------------------【删除父节点】");
-		// 删除父节点 
-		/**
-		 * 事件状态：【SyncConnected】,事件类型：【NodeDeleted】，path:/parent-node
-		 */
-		zk.exists(PARENT_NODE, true);
-		watch.deleteNodes(PARENT_NODE);
+//		System.out.println("-----------------------------------------【创建子节点】");
+//		// 创建子节点 
+//		/**
+//		 * 事件状态：【SyncConnected】,事件类型：【NodeCreated】，path:/parent-node/children-node
+//		 */
+//		zk.exists(CHILDREN_NODE, true);// 使用默认的watch监听
+//		watch.createNode(CHILDREN_NODE, "children-data");
+//		
+//		
+//		System.out.println("-----------------------------------------【设置数据】");
+//		// 设置数据
+//		/**
+//		 * 数据watch(data  watches)：getData()和exists()都可以设置数据watch
+//		 * 事件状态：【SyncConnected】,事件类型：【NodeDataChanged】，path:/parent-node
+//		 */
+//		// zk.exists(path, true);// 也可以监听数据变化
+//		zk.getData(PARENT_NODE, true, null);
+//		watch.setData(PARENT_NODE, "parent-data-change");
+//		
+//		
+//		System.out.println("-----------------------------------------【删除子节点】");
+//		// 删除子节点 
+//		/**
+//		 * 事件状态：【SyncConnected】,事件类型：【NodeDeleted】，path:/parent-node/children-node
+//		 * 事件状态：【SyncConnected】,事件类型：【NodeChildrenChanged】，path:/parent-node
+//		 */
+//		zk.getData(CHILDREN_NODE, true, null);
+//		zk.getChildren(PARENT_NODE, true);
+//		watch.deleteNodes(CHILDREN_NODE);
+//		
+//		
+//		System.out.println("-----------------------------------------【删除父节点】");
+//		// 删除父节点 
+//		/**
+//		 * 事件状态：【SyncConnected】,事件类型：【NodeDeleted】，path:/parent-node
+//		 */
+//		zk.exists(PARENT_NODE, true);
+//		watch.deleteNodes(PARENT_NODE);
 		
 		
 		
