@@ -17,7 +17,7 @@ public class SpringTest {
 		}
 		
 		MathCalculator calculator = context.getBean(MathCalculator.class);
-		System.out.println(calculator.div(2, 0));
+		calculator.div(2, 0);
 		context.close();
 	}
 }

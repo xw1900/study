@@ -1,5 +1,9 @@
 package com.xw.study.spring.aop.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.aopalliance.intercept.MethodInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -81,17 +85,73 @@ import com.xw.study.spring.aop.bean.MathCalculator;
 						1、遍历所有的后置处理器
 						2、如果后置处理器是InstantiationAwareBeanPostProcessor这种类型
 						3、则执行后置处理器的postProcessBeforeInstantiation方法。
-						4、执行后置处理器的postProcessAfterInitialization方法。
+						4、postProcessBeforeInstantiation执行完后不为null则执行后置处理器的postProcessAfterInitialization方法。
 				5、doCreateBean(beanName, mbdToUse, args);
 					和之前注册后置处理器的逻辑一致。
-		4、分析InstantiationAwareBeanPostProcessor的后置方法
+		4、分析上面3.1.4.1.3，也就是InstantiationAwareBeanPostProcessor的后置方法
 			1、aop之前注册了AnnotationAwareAspectJAutoProxyCreator
 			2、AnnotationAwareAspectJAutoProxyCreator就是InstantiationAwareBeanPostProcessor类型
 				所以并不是所有的后置处理器都是在对象实例化后初始化前执行。
 			3、判断当前bean是否在advisedBeans中（存放需要增强的bean）
-			4、判断当前bean是否是Advice Pointcut Advisor AopInfrastructureBean类型，或者标有Aspect注解
-			5、
+			4、isInfrastructureClass(beanClass) 判断当前bean是否是Advice Pointcut Advisor AopInfrastructureBean类型，或者标有Aspect注解，或者是否需要跳过
+				shouldSkip(beanClass, beanName) 是否需要跳过，
+					1、findCandidateAdvisors(); 获取候选的增强器（就是aspect中的通知方法）
+					【包装成了List<Advisor> candidateAdvisors，类型：InstantiationModelAwarePointcutAdvisor】
+			5、MathCalculator只是一个普通的bean，显然不是增强器，返回null，不会执行3.1.4.1.4的postProcessAfterInitialization
+				但是但是但是，只是不会执行resolveBeforeInstantiation中的postProcessAfterInitialization
+				还是会执行正常流程的postProcessAfterInitialization方法
+				所以MathCalculator和3.1.4 resolveBeforeInstantiation没有什么关系
+				不需要给后置处理器一个机会以便可以返回一个代理而不是目标实例化对象，LogAspects才需要
+				然后继续执行3.1.4.1.5的创建bean流程，其中会执行正常流程的postProcessAfterInitialization方法，如下：
+		5、正常流程的postProcessAfterInitialization
+			MathCalculator初始化后执行以下流程
+			1、return wrapIfNecessary(bean, beanName, cacheKey);
+			2、getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);获取bean的增强器
+			3、findEligibleAdvisors(beanClass, beanName);获取能在当前bean中使用的增强器
+			4、给通知方法排序
+			5、保存到增强处理bean中 advisedBeans.put(cacheKey, Boolean.TRUE);
+			6、createProxy 创建代理对象
+				1、生成proxyFactory，存放有需要增强的bean以及增强器
+				2、proxyFactory.getProxy(getProxyClassLoader());生成代理
+					1、如果是接口则创建jdk的，不是则cglib
+						if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
+							return new JdkDynamicAopProxy(config);
+						}
+						return new ObjenesisCglibAopProxy(config);
+				3、容器中存放的就是代理对象，代理对象中存放着目标方法，通知方法等
 				
+		6、目标方法的执行
+			1、拦截目标方法执行 CglibAopProxy.intercept
+			2、获取目标方法的拦截器链 getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
+				1、List<Object> interceptorList = new ArrayList<Object>(config.getAdvisors().length);
+				2、遍历所有的增强器（通知方法），封装成Interceptor对象放到interceptorList 
+					registry.getInterceptors(advisor);
+					1、判断是不是MethodInterceptor，是则直接加，不是就用适配器转换
+			3、如果没有拦截器链，直接执行目标方法 methodProxy.invoke(target, argsToUse);
+			4、有拦截器链，CglibMethodInvocation.proceed();
+			
+		7、拦截器链的调用过程 CglibMethodInvocation.proceed();
+			1、	if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size() - 1) {
+					return invokeJoinpoint();
+				}
+				currentInterceptorIndex初始是-1
+				interceptorsAndDynamicMethodMatchers是拦截器链
+				如果拦截器链是空的：则正好相等，则直接通过反射执行目标方法，method.invoke(target, args);不执行增强通知方法。
+				如果是最后一个：也相等，此时相当于通知方法已经执行完了，也去执行目标方法
+			2、((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
+			3、第一个拦截器是执行ExposeInvocationInterceptor.invoke
+			4、return mi.proceed();还是执行proceed()方法
+			5、第二个拦截器则是相应的通知方法的invode()方法，还是会执行proceed()方法
+			6、第三个拦截器则是相应的通知方法的invode()方法，还是会执行proceed()方法，依次执行...
+			7、一直执行到最后一个拦截器前，都还没有处理任何和我们写的相关的代码，直到最后一个
+			8、最后一个拦截器是before的（如果有的话）所以很重要的是拦截器链是排好序的，先before执行，然后目标方法，然后aftet或者异常，这很重要
+			9、还有很重要的是不同的通知方法的拦截器不同
+			10、执行到before的拦截器，先会调用前置通知，然后再执行proceed()
+			11、此时已经是最后一个了，则会执行第一个提到的 return invokeJoinpoint();反射执行目标方法
+			12、return invokeJoinpoint();之后，因为是一层一层调用的，before return会到目标方法，目标方法return会到after
+			13、每个通知方法都会try，throw的通知方法才会catch，如果有异常则会走throw，没有则会afterreturn，
+			14、然后再一层层返回，最终执行完毕
+			
  *				
  */								
 @EnableAspectJAutoProxy
