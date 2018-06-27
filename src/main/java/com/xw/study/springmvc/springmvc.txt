@@ -1,0 +1,17 @@
+spring-web的jar包下 META-INF/services/javax.servlet.ServletContainerInitializer下：
+org.springframework.web.SpringServletContainerInitializer
+这是spring-web实现的方式
+源码可知：只需要关注WebApplicationInitializer及其子类即可
+会依次调用WebApplicationInitializer.onStartup方法
+for (WebApplicationInitializer initializer : initializers) {
+	initializer.onStartup(servletContext);
+}
+
+WebApplicationInitializer
+	AbstractContextLoaderInitializer -->  创建根容器：createRootApplicationContext()
+		AbstractDispatcherServletInitializer -->  创建web的根容器：createServletApplicationContext();
+			创建了 DispatcherServlet(servletAppContext);并添加到ServletContext中
+			getServletMappings()
+			AbstractAnnotationConfigDispatcherServletInitializer
+
+
