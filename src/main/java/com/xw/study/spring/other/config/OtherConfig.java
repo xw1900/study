@@ -1,19 +1,12 @@
 package com.xw.study.spring.other.config;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.SimpleApplicationEventMulticaster;
-import org.springframework.stereotype.Component;
+import org.springframework.context.event.EventListener;
 
 import com.xw.study.spring.other.service.TestService;
-import com.xw.study.spring.other.service.impl.TestServiceImpl1;
 import com.xw.study.spring.other.service.impl2.TestServiceImpl2;
 
 /**
@@ -55,8 +48,18 @@ import com.xw.study.spring.other.service.impl2.TestServiceImpl2;
  *			2、initApplicationEventMulticaster();
  *			3、拿到所有的监听器，如果没有则创建一个默认的applicationEventMulticaster = new SimpleApplicationEventMulticaster(beanFactory);
  *			4、registerListeners()
- *			5、
+ *			5、getApplicationEventMulticaster().addApplicationListenerBean(listenerBeanName);
  *
+ *	3、@EventListener(value={ApplicationEvent.class})
+ *		原理：
+ *			1、refresh();
+ *			2、finishBeanFactoryInitialization(beanFactory);
+ *			3、beanFactory.preInstantiateSingletons();
+ *			4、if (singletonInstance instanceof SmartInitializingSingleton) 
+ *				-->smartSingleton.afterSingletonsInstantiated();
+ *			5、EventListenerMethodProcessor就是一个SmartInitializingSingleton
+ *			6、最终也是将该方法转换为ApplicationListener
+ *			7、然后添加applicationContext.addApplicationListener(applicationListener);
  *
  */
 @Configuration
@@ -66,5 +69,10 @@ public class OtherConfig {
 	@Bean("testService")
 	public TestService testService() {
 		return new TestServiceImpl2();
+	}
+	
+	@EventListener(value={ApplicationEvent.class})
+	public void testEventListener(ApplicationEvent event) {
+		System.out.println("收到事件："+event);
 	}
 }
