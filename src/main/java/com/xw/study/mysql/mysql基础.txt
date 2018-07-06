@@ -429,19 +429,20 @@ DML语言
 		3.truncate 删除带自增长的列的表后，如果再插入数据，数据从1开始
 			delete 删除带自增长列的表后，如果再插入数据，数据从上一次的断点处开始
 		4.truncate删除不能回滚，delete删除可以回滚
+		5.truncate删除没有返回值，delete删除有返回值
 
 DDL语句
 库和表的管理
 库的管理：
 	一、创建库
-		create database 库名
+		create database if not exists 库名
 	二、删除库
-		drop database 库名
+		drop database if exists 库名
 表的管理：
 	1.创建表
 		CREATE TABLE IF NOT EXISTS stuinfo(
 			stuId INT,
-			stuName VARCHAR(20),
+			stuName VARCHAR(20),//20个字符
 			gender CHAR,
 			bornDate DATETIME
 		);
@@ -461,22 +462,66 @@ DDL语句
 			ALTER TABLE studentinfo DROP COLUMN email;
 	3.删除表
 		DROP TABLE [IF EXISTS] studentinfo;
-
+	4.复制表
+		1、仅仅复制表的结构：
+			create table copy like author
+		2、复制表的结构和数据：
+			create table copy2 select * from author
+		3、只复制部分：
+			上面添加条件即可
+			
 常见类型
-
 	整型：
+		整数类型		字节		范围
+		Tinyint		1		有符号：-128~127 无符号：0~255
+		Smallint	2		有符号：-32768~32767 无符号：0~65535
+		Mediumint	3		有符号：-8388608~8388607 无符号：0~1677215
+		Int/integer	4		有符号：-2147483648~2147483647 无符号：0~4294967295
+		Bigint		8		有符号：-92233720368.。。。。。。
 		
+		如何设置无符号和有符号：
+			默认都是有符号的，支持负数
+			设置：创建表的时候添加限制   id INT unsigned  此时就不能插入负数了，插入负数默认为0
+		存数据时，超过范围会存为临界值	
+		如果不设置长度，会有默认的长度，这个长度只是显示的长度，不影响存数据时长度的限制（真正限制的是设置的整数的类型（int smallint等）），
+			如果搭配了  id  int(7) zerofill这个限制（加了之后自动变为无符号），则长度不足7的时候会用0填充
 	小数：
 		浮点型
+			浮点数类型			字节		范围
+			float(M,D)		4		
+			double(M,D)		8	
 		定点型
+			dec(M,D)/
+			decimal(M,D)	8		最大范围和double相同，给定decimal的有效取值范围由M和D决定，精度比double高
+			
+		M和D：M：整数和小数加起来的长度		D：小数点的位数，不够0补充
+			m和d都可以省略，float和double是根据插入的数值来决定的，decimal默认是(10,0)即默认无小数位
+			
+		选取原则：所选择的类型越简单越好，能保存数值的类型越小越好
 	字符型：
+		较短的文本：char varchar
+			char(M)	m为0~255之间的整数，m可以省略，默认为1
+			varchar(M) m为0~65535之间的整数
+			char和varchar比较：
+				char是固定长度的字符，比较耗费空间，效率高
+				varchar是可变的长度的字符，比较节省空间，效率低一些
+				使用：如果是固定的长度的，如性别男女，建议用char
+					如果不是固定长度的，长度不确定，建议用varchar
+		较长的文本：text blob（较长的二进制数据）
 	日期型：
+		类型			字节			最小值					最大值
+		date		4			1000-01-01				9999-12-31
+		datetime	8			1000-01-01 00:00:00		9999-12-31 23:59:59
+		timestamp	4			19700101080001			2038年的某个时刻
+		time		3			-838:59:59				838:59:59
+		year		1			1901					2155
+		
+		区别：timestamp支持的时间范围较小
+			timestamp和实际时区有关，更能反映实际的日期，datetime只能反映插入的当地时区
+			timestramp的属性受mysql版本和sqlmode的影响很大
 	Blob类型：
 
-
-
-###常见约束
-
+常见约束
 	NOT NULL
 	DEFAULT
 	UNIQUE
@@ -484,11 +529,11 @@ DDL语句
 	PRIMARY KEY
 	FOREIGN KEY
 
-##数据库事务
-###含义
+数据库事务
+含义
 	通过一组逻辑操作单元（一组DML——sql语句），将数据从一种状态切换到另外一种状态
 
-###特点
+特点
 	（ACID）
 	原子性：要么都执行，要么都回滚
 	一致性：保证数据的状态操作前和操作后保持一致
@@ -501,13 +546,10 @@ DDL语句
 	2、编写事务的一组逻辑操作单元（多条sql语句）
 	3、提交事务或回滚事务
 
-###事务的分类：
-
+事务的分类：
 隐式事务，没有明显的开启和结束事务的标志
-
 	比如
 	insert、update、delete语句本身就是一个事务
-
 
 显式事务，具有明显的开启和结束事务的标志
 
