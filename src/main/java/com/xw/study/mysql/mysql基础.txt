@@ -522,17 +522,91 @@ DDL语句
 	Blob类型：
 
 常见约束
-	NOT NULL
-	DEFAULT
-	UNIQUE
-	CHECK
-	PRIMARY KEY
-	FOREIGN KEY
-
+	NOT NULL 非空，保证该字段的值不能为空
+	DEFAULT 默认，保证该字段有默认值
+	UNIQUE 唯一，用于保证该字段的值具有唯一性，可以为空
+	CHECK mysql中不支持
+	PRIMARY KEY 主键 保证该字段的值具有唯一性，并且非空
+	FOREIGN KEY 外键 限制两个表的关系，保证该字段的值必须来自于主表的关联列的值
+	
+	添加约束的时机：
+		创建表时
+		修改表时
+		
+	约束的添加分类：
+		列级约束：直接在建表时的列上添加 如：id int not null 之类的
+			非空 默认 唯一 主键
+		表级约束
+			【constraint 约束名】 约束类型（字段名）
+			约束名可以不取，默认是字段名
+			除了默认，非空 其他的都支持
+			如：constraint pk primary key(id) 主键，注意：mysql中主键名就是primary，设置了pk也没有用，其他数据库如sql server可以
+				constraint uq unique(seat) 唯一
+				constraint ck check(gender='nan' or gender = 'nv') 检查
+				constraint fk_stuinfo_major foreign key(majorid) references major(id) 外键
+				
+		通用写法：外键用表级，其他的用列级。。。。如：
+			create table if not exists stuinfo(
+				id int primary key,
+				name varchar(20) not null,
+				sex char(1),
+				age int default 18,
+				seat int unique,
+				majorid int,
+				constraint fk_stuinfo_major foreign key(majorid) references major(id)
+			)
+			
+		主键和唯一
+			同：都可以保证唯一，都可以组合【不推荐】
+				组合主键：多个列联合作为一个主键来保证【不推荐】
+				组合唯一键：也是一样，多个列唯一才算唯一【不推荐】
+			异：唯一不保证非空，主键保证
+			 	唯一只能一个，非空可以多个列
+			 	
+		外键：1、要求在从表设置外键关系
+			2、从表的外键列的类型和主表的关联列的类型要求一致或兼容，名称无要求
+			3、主表的关联列必须是一个key（一般是主键或唯一）		
+			4、插入数据时，先插入主表，再插入从表
+			5、删除数据时，先删除从表，再删除主表
+				如果硬要删除主表的数据呢？【很少用】
+					1、级联删除：alter table stuinfo add constraint fk_stu_major foreign key(majorid) references major(id) on delete cascade
+						此时删除主表的数据时，从表中外键引用该主表中的数据也会被删除。
+					2、级联置空：alter table stuinfo add constraint fk_stu_major foreign key(majorid) references major(id) on delete set null
+						此时删除主表中的数据时，从表中外键引用该主表中的数据的外键被会被设置为null
+			
+		修改表时添加约束：
+			添加非空约束：alter table stuinfo modify column stuname varchar(20) not null
+			添加默认约束：alter table stuinfo modify column age int default 18
+			添加主键：alter table stuinfo modify column id int primary key
+			添加唯一（表级约束写法）alter table stuinfo add unique(seat)
+			添加外键：alter table stuinfo add constraint fk_stuinfo_major foreign key(majorid) references major(id)
+		修改表时删除约束：
+			删除非空约束：alter table stuinfo modify column stuname varchar(20) null
+			删除默认约束：alter table stuinfo modify column age int
+			删除主键：alter table stuinfo modify column id int
+				alter table stuinfo drop primary key
+			。。。。。。
+			
+		列级约束和表级约束：
+			列级约束：在列的后面，语法都支持，但外键没有效果，不可以起约束名
+			表级约束：所有列的下面，默认和非空不支持，其他的支持，可以起约束名（主键没有效果）
+			
+		标识列：又称为自增长列，
+			可以不用手动的插入值，系统提供默认的序列值  auto_increment
+			mysql中不支持设置起始值，步长可以设置
+			特点：
+				1、标识列不一定要和主键搭配，只要是key就可以
+				2、标识列只能有一个
+				3、标识列的类型只能是数值型
+				4、标识列可以通过set auto_increment_increment = 3设置步长
+			修改表时添加标识列：
+				alter table xxx modify column id int primary key auto_increment;
+				
 数据库事务
+	一个或一组sql语句组成一个执行单元，这个执行单元要么全部执行，要么全部不执行
+存储引擎：mysql中数据用各种不同的技术存储在文件或内存中，其实就是数据是用什么方式来存储的。
 含义
 	通过一组逻辑操作单元（一组DML——sql语句），将数据从一种状态切换到另外一种状态
-
 特点
 	（ACID）
 	原子性：要么都执行，要么都回滚
@@ -541,365 +615,344 @@ DDL语句
 	持久性：一个事务一旦提交，则数据将持久化到本地，除非其他事务对其进行修改
 
 相关步骤：
-
 	1、开启事务
 	2、编写事务的一组逻辑操作单元（多条sql语句）
 	3、提交事务或回滚事务
 
 事务的分类：
-隐式事务，没有明显的开启和结束事务的标志
-	比如
-	insert、update、delete语句本身就是一个事务
+隐式事务：没有明显的开启和结束事务的标志
+	比如：insert、update、delete语句本身就是一个隐式事务，在该语句前后有自动开启和关闭事务
 
-显式事务，具有明显的开启和结束事务的标志
-
+显式事务：具有明显的开启和结束事务的标志
+	前提：必须先设置自动提交功能为禁用，即在开启显示事务的时候关闭隐式事务，这个关闭只在当前会话有效，不会导致以后也关闭隐式事务
 		1、开启事务
-		取消自动提交事务的功能
-		
+			show variables like 'autocommit'
+			取消自动提交事务的功能    set autocommit=0;
 		2、编写事务的一组逻辑操作单元（多条sql语句）
-		insert
-		update
-		delete
-		
+			insert
+			update
+			delete
 		3、提交事务或回滚事务
-###使用到的关键字
-
-	set autocommit=0;
-	start transaction;
-	commit;
-	rollback;
+		
+使用到的关键字
+	set autocommit=0;		取消自动提交事务的功能
+	start transaction;		开启事务，可选，set autocommit=0默认已经开始了事务
+	commit;					正常时提交事务
+	rollback;				异常时回滚事务
 	
 	savepoint  断点
-	commit to 断点
+		设置断点后，可自行回滚到指定断点，只能搭配rollback，不能搭配commit
 	rollback to 断点
 
-
-###事务的隔离级别:
-
-事务并发问题如何发生？
-
-	当多个事务同时操作同一个数据库的相同数据时
+事务的隔离级别:
+	事务并发问题如何发生？
+		当多个事务同时操作同一个数据库的相同数据时
 事务的并发问题有哪些？
-
-	脏读：一个事务读取到了另外一个事务未提交的数据
-	不可重复读：同一个事务中，多次读取到的数据不一致
+	脏读：一个事务读取到了另外一个事务【未提交的】数据
+		A事务读取了已经被B事务更新但是还没提交的字段，此时B回滚了，A读取到的数据是临时且无效的。
+	不可重复读：【同一个事务】中，多次读取到的数据不一致
+		在同一个事务中A事务读取了一个字段，然后B事务正常【更新】了该字段且提交了，此时B再去读的时候发现数据不一致了。
 	幻读：一个事务读取数据时，另外一个事务进行更新，导致第一个事务读取到了没有更新的数据
+		A事务在一个表中读取了行数之类的，然后B事务在此表中【插入或删除】了一些新的数据，此时A再去读取发现行数变了。
 	
 如何避免事务的并发问题？
-
 	通过设置事务的隔离级别
 	1、READ UNCOMMITTED
 	2、READ COMMITTED 可以避免脏读
 	3、REPEATABLE READ 可以避免脏读、不可重复读和一部分幻读
-	4、SERIALIZABLE可以避免脏读、不可重复读和幻读
+	4、SERIALIZABLE可以避免脏读、不可重复读和幻读，性能较低
 	
-设置隔离级别：
+oracle只支持两种事务隔离级别，读已提交和串行化，默认是【读已提交】
+mysql支持四种隔离级别，默认是【不可重复读】
 
+设置隔离级别：
 	set session|global  transaction isolation level 隔离级别名;
 查看隔离级别：
-
 	select @@tx_isolation;
 	
-
-
-##视图
+	
+视图
 含义：理解成一张虚拟的表
 
 视图和表的区别：
-	
 		使用方式	占用物理空间
-	
 	视图	完全相同	不占用，仅仅保存的是sql逻辑
-	
 	表	完全相同	占用
 
+视图一般用作查询
+
 视图的好处：
-
-
 	1、sql语句提高重用性，效率高
 	2、和表实现了分离，提高了安全性
 
-###视图的创建
+视图的创建
 	语法：
-	CREATE VIEW  视图名
-	AS
-	查询语句;
-###视图的增删改查
+		CREATE VIEW 视图名
+		AS
+		查询语句;
+	
+视图的增删改查
 	1、查看视图的数据 ★
-	
-	SELECT * FROM my_v4;
-	SELECT * FROM my_v1 WHERE last_name='Partners';
-	
+		SELECT * FROM my_v4;
+		SELECT * FROM my_v1 WHERE last_name='Partners';
 	2、插入视图的数据
-	INSERT INTO my_v4(last_name,department_id) VALUES('虚竹',90);
-	
+		INSERT INTO my_v4(last_name,department_id) VALUES('虚竹',90);
 	3、修改视图的数据
-	
-	UPDATE my_v4 SET last_name ='梦姑' WHERE last_name='虚竹';
-	
-	
+		UPDATE my_v4 SET last_name ='梦姑' WHERE last_name='虚竹';
 	4、删除视图的数据
-	DELETE FROM my_v4;
-###某些视图不能更新
-	包含以下关键字的sql语句：分组函数、distinct、group  by、having、union或者union all
-	常量视图
-	Select中包含子查询
-	join
-	from一个不能更新的视图
-	where子句的子查询引用了from子句中的表
-###视图逻辑的更新
-	#方式一：
-	CREATE OR REPLACE VIEW test_v7
-	AS
-	SELECT last_name FROM employees
-	WHERE employee_id>100;
+		DELETE FROM my_v4;
 	
-	#方式二:
-	ALTER VIEW test_v7
-	AS
-	SELECT employee_id FROM employees;
+某些视图不能更新
+	1、包含以下关键字的sql语句：分组函数、distinct、group by、having、union或者union all
+	2、常量视图
+	3、Select中包含子查询
+	4、join
+	5、from一个不能更新的视图
+	6、where子句的子查询引用了from子句中的表
 	
-	SELECT * FROM test_v7;
-###视图的删除
+	视图可以更新也会导致不安全，所以一般会设置视图的权限，可以读不可以更新
+	
+视图逻辑的更新
+	方式一：存在就修改，不存在就创建
+		CREATE OR REPLACE VIEW test_v7
+		AS
+		SELECT last_name FROM employees
+		WHERE employee_id>100;
+	方式二：仅修改
+		ALTER VIEW test_v7
+		AS
+		SELECT employee_id FROM employees;
+		
+		SELECT * FROM test_v7;
+视图的删除
 	DROP VIEW test_v1,test_v2,test_v3;
-###视图结构的查看	
+视图结构的查看	
 	DESC test_v7;
 	SHOW CREATE VIEW test_v7;
 
-##存储过程
 
-含义：一组经过预先编译的sql语句的集合
+存储过程和方法：类似于java中的方法
+好处：提高代码的重用性，简化操作
+
+存储过程
+一般用作增删改，且是大数据量
+含义：一组经过预先编译的sql语句的集合，理解成批处理语句
 好处：
-
 	1、提高了sql语句的重用性，减少了开发程序员的压力
-	2、提高了效率
-	3、减少了传输次数
-
+	2、提高了效率，第一次调用过了就不会再次编译，可以直接用
+	3、减少了传输次数，减少了和数据库服务器的连接次数
 分类：
-
 	1、无返回无参
 	2、仅仅带in类型，无返回有参
 	3、仅仅带out类型，有返回无参
 	4、既带in又带out，有返回有参
 	5、带inout，有返回有参
 	注意：in、out、inout都可以在一个存储过程中带多个
-###创建存储过程
+创建存储过程
 语法：
-
 	create procedure 存储过程名(in|out|inout 参数名  参数类型,...)
 	begin
 		存储过程体
-
 	end
-
 类似于方法：
-
 	修饰符 返回类型 方法名(参数类型 参数名,...){
-
 		方法体;
 	}
+	
+	1、参数类型包含三部分：参数模式	参数名	参数类型
+		参数模式：
+			in：该参数只能作为输入（该参数不能做返回值）
+			out：该参数只能作为输出（该参数只能做返回值）
+			inout：既能做输入又能做输出
+	2、如果存储过程体仅仅只有一句话，则begin end可以省略
+	3、存储过程体中的每句sql语句的结尾要求必须加分号;这个分号仅仅表示这一条sql结束了
+	4、存储过程的结尾需要设置新的结束标记，默认的结束标记是;改了新的结束标记后该会话内的所有结束标记都要用这个新的才可以，就算没在存储过程内也是一样
+		delimiter 新的结束标记
+		示例：
+		delimiter $
 
-注意
-
-	1、需要设置新的结束标记
-	delimiter 新的结束标记
-	示例：
-	delimiter $
-
-	CREATE PROCEDURE 存储过程名(IN|OUT|INOUT 参数名  参数类型,...)
-	BEGIN
-		sql语句1;
-		sql语句2;
-
-	END $
-
-	2、存储过程体中可以有多条sql语句，如果仅仅一条sql语句，则可以省略begin end
-
-	3、参数前面的符号的意思
-	in:该参数只能作为输入 （该参数不能做返回值）
-	out：该参数只能作为输出（该参数只能做返回值）
-	inout：既能做输入又能做输出
-
-
-#调用存储过程
+		CREATE PROCEDURE 存储过程名(IN|OUT|INOUT 参数名  参数类型,...)
+		BEGIN
+			sql语句1;
+			sql语句2;
+		END $
+调用存储过程
 	call 存储过程名(实参列表)
-##函数
-
-
-###创建函数
-
+案例：插入几条数据，空参
+	创建：
+		delimiter $
+		create procedure myp1()
+		begin
+			insert into admin(。。。。。。) values(。。。。。。)
+		end $
+	调用：
+		call myp1()$
+案例：查询，有参
+	创建：
+		delimiter $
+		create procedure myp2(in beautyName varchar(20))
+		begin
+			select bo.* from boys bo right join beauty b on bo.id = b.boyfriend_id where b.name = beautyName;
+		end $
+	调用：
+		call myp2('柳岩')$
+		
+存储过程删除：drop procedure p1;//只能一次删除一个存储过程
+查看存储过程：show create procedure p1;
+存储过程不能修改
+		
+函数
+创建函数
 学过的函数：LENGTH、SUBSTR、CONCAT等
 语法：
-
 	CREATE FUNCTION 函数名(参数名 参数类型,...) RETURNS 返回类型
 	BEGIN
 		函数体
-	
 	END
 
-###调用函数
+注意：
+	1、函数体肯定要有返回值，如果没有会报错
+	2、如果return语句没有放在函数体的最后也不会报错，但不建议
+	3、函数体中仅有一句话时，则可以省略begin end
+	4、使用delimiter语句设置结束标记
+
+调用函数
 	SELECT 函数名（实参列表）
-
-
-
-
-
-###函数和存储过程的区别
-
-			关键字		调用语法	返回值			应用场景
-	函数		FUNCTION	SELECT 函数()	只能是一个		一般用于查询结果为一个值并返回时，当有返回值而且仅仅一个
-	存储过程	PROCEDURE	CALL 存储过程()	可以有0个或多个		一般用于更新
-
-
-##流程控制结构
-
-###系统变量
-一、全局变量
-
-作用域：针对于所有会话（连接）有效，但不能跨重启
-
-	查看所有全局变量
-	SHOW GLOBAL VARIABLES;
-	查看满足条件的部分系统变量
-	SHOW GLOBAL VARIABLES LIKE '%char%';
-	查看指定的系统变量的值
-	SELECT @@global.autocommit;
-	为某个系统变量赋值
-	SET @@global.autocommit=0;
-	SET GLOBAL autocommit=0;
-
-二、会话变量
-
-作用域：针对于当前会话（连接）有效
-
-	查看所有会话变量
-	SHOW SESSION VARIABLES;
-	查看满足条件的部分会话变量
-	SHOW SESSION VARIABLES LIKE '%char%';
-	查看指定的会话变量的值
-	SELECT @@autocommit;
-	SELECT @@session.tx_isolation;
-	为某个会话变量赋值
-	SET @@session.tx_isolation='read-uncommitted';
-	SET SESSION tx_isolation='read-committed';
-
-###自定义变量
-一、用户变量
-
-声明并初始化：
-
-	SET @变量名=值;
-	SET @变量名:=值;
-	SELECT @变量名:=值;
-赋值：
-
-	方式一：一般用于赋简单的值
-	SET 变量名=值;
-	SET 变量名:=值;
-	SELECT 变量名:=值;
-
-
-	方式二：一般用于赋表 中的字段值
-	SELECT 字段名或表达式 INTO 变量
-	FROM 表;
-
-使用：
-
-	select @变量名;
-
-二、局部变量
-
-声明：
-
-	declare 变量名 类型 【default 值】;
-赋值：
-
-	方式一：一般用于赋简单的值
-	SET 变量名=值;
-	SET 变量名:=值;
-	SELECT 变量名:=值;
-
-
-	方式二：一般用于赋表 中的字段值
-	SELECT 字段名或表达式 INTO 变量
-	FROM 表;
-
-使用：
-
-	select 变量名
-
-
-
-二者的区别：
-
-			作用域			定义位置		语法
-用户变量	当前会话		会话的任何地方		加@符号，不用指定类型
-局部变量	定义它的BEGIN END中 	BEGIN END的第一句话	一般不用加@,需要指定类型
-
-###分支
-一、if函数
-	语法：if(条件，值1，值2)
-	特点：可以用在任何位置
-
-二、case语句
-
-语法：
-
-	情况一：类似于switch
-	case 表达式
-	when 值1 then 结果1或语句1(如果是语句，需要加分号) 
-	when 值2 then 结果2或语句2(如果是语句，需要加分号)
-	...
-	else 结果n或语句n(如果是语句，需要加分号)
-	end 【case】（如果是放在begin end中需要加上case，如果放在select后面不需要）
-
-	情况二：类似于多重if
-	case 
-	when 条件1 then 结果1或语句1(如果是语句，需要加分号) 
-	when 条件2 then 结果2或语句2(如果是语句，需要加分号)
-	...
-	else 结果n或语句n(如果是语句，需要加分号)
-	end 【case】（如果是放在begin end中需要加上case，如果放在select后面不需要）
-
-
-特点：
-	可以用在任何位置
-
-三、if elseif语句
-
-语法：
-
-	if 情况1 then 语句1;
-	elseif 情况2 then 语句2;
-	...
-	else 语句n;
-	end if;
-
-特点：
-	只能用在begin end中！！！！！！！！！！！！！！！
-
-
-三者比较：
-			应用场合
-	if函数		简单双分支
-	case结构	等值判断 的多分支
-	if结构		区间判断 的多分支
-
-
-###循环
-
-语法：
-
-
-	【标签：】WHILE 循环条件  DO
-		循环体
-	END WHILE 【标签】;
 	
-特点：
+查看函数：show create function myf3;
 
-	只能放在BEGIN END里面
+函数和存储过程的区别
+			关键字		调用语法			返回值			应用场景
+	函数		FUNCTION	SELECT 函数()		只能是一个			一般用于查询结果为一个值并返回时，当有返回值而且仅仅一个
+	存储过程	PROCEDURE	CALL 存储过程()	可以有0个或多个		一般用于更新，适合做批量插入，批量更新
 
-	如果要搭配leave跳转语句，需要使用标签，否则可以不用标签
 
-	leave类似于java中的break语句，跳出所在循环！！！
+变量：
+	1、系统变量：变量由系统提供，不是用户定义，属于服务器层面
+		一、全局变量
+			作用域：针对于所有会话（连接）有效，但不能跨重启，重启后就会全部初始化，可以通过修改配置文件解决
+				查看所有全局变量
+					SHOW GLOBAL VARIABLES;
+				查看满足条件的部分系统变量
+					SHOW GLOBAL VARIABLES LIKE '%char%';
+				查看指定的系统变量的值
+					SELECT @@global.autocommit;
+				为某个系统变量赋值
+					SET @@global.autocommit=0;
+					SET GLOBAL autocommit=0;
+		
+		二、会话变量，默认就是会话级别。
+			作用域：针对于当前会话（连接）有效
+				查看所有会话变量
+					SHOW SESSION VARIABLES;
+				查看满足条件的部分会话变量
+					SHOW SESSION VARIABLES LIKE '%char%';
+				查看指定的会话变量的值
+					SELECT @@autocommit;
+					SELECT @@session.tx_isolation;
+				为某个会话变量赋值
+					SET @@session.tx_isolation='read-uncommitted';
+					SET SESSION tx_isolation='read-committed';
+	2、自定义变量
+		一、用户变量
+			作用域：针对于当前会话（连接）有效，应用在任何地方，也就是begin end里面或外面
+			声明并初始化：
+				SET @变量名=值;
+				SET @变量名:=值;
+				SELECT @变量名:=值;
+			赋值：
+				方式一：一般用于赋简单的值
+					SET @变量名=值;
+					SET @变量名:=值;
+					SELECT @变量名:=值;
+				方式二：一般用于赋表 中的字段值
+					SELECT 字段名或表达式 INTO 变量  FROM 表;
+			使用：
+				select @变量名;
+		
+		二、局部变量
+			作用域：仅仅在定义它的begin end中有效
+			应用在begin end中的第一句话
+			声明：
+				declare 变量名 类型 【default 值】;
+			赋值：
+				方式一：一般用于赋简单的值
+					SET 变量名=值;
+					SET 变量名:=值;
+					SELECT @变量名:=值;
+				方式二：一般用于赋表 中的字段值
+					SELECT 字段名或表达式 INTO 变量  FROM 表;
+			使用：
+				select 变量名
 	
+		二者的区别：
+						作用域					定义位置				语法
+			用户变量		当前会话					会话的任何地方			加@符号，不用指定类型
+			局部变量		定义它的BEGIN END中 		BEGIN END的第一句话		一般不用加@,需要指定类型
+
+
+流程控制结构
+	1、顺序结构，程序从上往下依次执行
+	2、分支结构，程序从两条或多条路径中选择一条去执行
+	3、循环结构，程序在满足一定条件的基础上，重复执行一段代码
+分支
+	一、if函数
+		语法：if(条件，值1，值2)
+		特点：可以用在任何位置
+	二、case语句
+		语法：
+			情况一：类似于switch
+				case 表达式
+				when 值1 then 结果1或语句1(如果是语句，需要加分号) 
+				when 值2 then 结果2或语句2(如果是语句，需要加分号)
+				...
+				else 结果n或语句n(如果是语句，需要加分号)
+				end 【case】（如果是放在begin end中需要加上case，如果放在select后面不需要）
+			情况二：类似于多重if
+				case 
+				when 条件1 then 结果1或语句1(如果是语句，需要加分号) 
+				when 条件2 then 结果2或语句2(如果是语句，需要加分号)
+				...
+				else 结果n或语句n(如果是语句，需要加分号)
+				end 【case】（如果是放在begin end中需要加上case，如果放在select后面不需要）
+		特点：可以用在任何位置
+			else可以省略，如果else省略了，并且所有when条件都不满足，则返回null
+			
+	三、if elseif语句
+		语法：
+			if 情况1 then 语句1;
+			elseif 情况2 then 语句2;
+			...
+			else 语句n;
+			end if;
+		特点：只能用在begin end中！！！！！！！！！！！！！！！
+			else可以省略，如果else省略了，并且所有when条件都不满足，则返回null
+	三者比较：
+					应用场合
+		if函数		简单双分支
+		case结构		等值判断 的多分支
+		if结构		区间判断 的多分支
+
+循环
+	分类：while，loop，repeat
+	循环控制：iterate类似于continue，继续，结束本次循环，继续下一次
+			leave类似于break，跳出，结束当前所在的循环
+	语法：标签：给循环起了名字
+		while：
+			【标签：】WHILE 循环条件  DO
+				循环体
+				END WHILE 【标签】;
+		loop：可以模拟简单的死循环
+			【标签：】loop
+				循环体
+				END loop 【标签】;
+		repeat：
+			【标签：】repeat
+				循环体
+				until 结束循环的条件 
+				END repeat 【标签】;
+						
+	特点：
+		只能放在BEGIN END里面！！！！！！！！！！！！！！！
+		如果要搭配leave跳转语句，需要使用标签，否则可以不用标签
+		leave类似于java中的break语句，跳出所在循环！！！
