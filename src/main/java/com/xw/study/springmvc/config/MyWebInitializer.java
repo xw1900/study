@@ -8,7 +8,8 @@ public class MyWebInitializer extends AbstractAnnotationConfigDispatcherServletI
 	// 获取根容器的配置类。spring的配置类。父容器
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
-		return new Class<?>[]{RootConfig.class};
+//		return new Class<?>[]{RootConfig.class};
+		return null;
 	}
 
 	// 获取web容器的配置类。springmvc的配置类。子容器
