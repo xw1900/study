@@ -35,6 +35,9 @@ public class AppConfig extends WebMvcConfigurationSupport {
 		registry.addConverter(timestampConverter);
 	}
 	
+	
+	// 测试cherry-pick
+	
 	// 拦截器注册
 //	@Override
 //	protected void addInterceptors(InterceptorRegistry registry) {
