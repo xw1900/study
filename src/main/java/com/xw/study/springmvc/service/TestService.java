@@ -2,5 +2,5 @@ package com.xw.study.springmvc.service;
 
 public interface TestService {
 
-	void testPrint();
+	void testPrint(long id);
 }

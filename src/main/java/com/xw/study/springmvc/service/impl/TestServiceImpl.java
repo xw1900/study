@@ -9,7 +9,7 @@ import com.xw.study.springmvc.service.TestService;
 public class TestServiceImpl extends BaseService implements TestService {
 
 	@Override
-	public void testPrint() {
+	public void testPrint(long id) {
 		test();
 	}
 

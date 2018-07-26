@@ -1,12 +1,11 @@
 package com.xw.study.springmvc.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
@@ -14,8 +13,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 //配置组件（视图解析器、视图映射、静态资源映射、拦截器。。。）
 @ComponentScan(value = "com.xw.study.springmvc"/*, useDefaultFilters = false, includeFilters = {
 		@Filter(type = FilterType.ANNOTATION, classes = { Controller.class }) }*/)
-@EnableWebMvc// <mvc:annotation-driven/>
+//@EnableWebMvc// <mvc:annotation-driven/>
 @Configuration
+@PropertySources({ @PropertySource("classpath:properties/redis.properties") })
 public class AppConfig extends WebMvcConfigurationSupport {
 
 	@Override

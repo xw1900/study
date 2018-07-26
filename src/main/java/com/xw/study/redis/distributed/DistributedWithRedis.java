@@ -17,10 +17,18 @@ public class DistributedWithRedis {
 	public static void main(String[] args) {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring-common.xml");
 		JedisPool jedisPool = context.getBean(JedisPool.class);
-		System.out.println(jedisPool);
+//		System.out.println(jedisPool);
 		Jedis jedis = jedisPool.getResource();
+		
+//		testRedis(jedis);
 
 		boolean lock = RedisTool.tryGetDistributedLock(jedis, "lock:erp:111", UUID.randomUUID().toString(), 10000);
 		System.out.println(lock);
+	}
+
+	private static void testRedis(Jedis jedis) {
+		System.out.println(jedis.configGet("port"));// [port, 6379]
+		System.out.println(jedis.configGet("*"));
+
 	}
 }
