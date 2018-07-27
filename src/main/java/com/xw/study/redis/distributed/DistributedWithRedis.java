@@ -20,10 +20,10 @@ public class DistributedWithRedis {
 //		System.out.println(jedisPool);
 		Jedis jedis = jedisPool.getResource();
 		
-//		testRedis(jedis);
+		testRedis(jedis);
 
-		boolean lock = RedisTool.tryGetDistributedLock(jedis, "lock:erp:111", UUID.randomUUID().toString(), 10000);
-		System.out.println(lock);
+//		boolean lock = RedisTool.tryGetDistributedLock(jedis, "lock:erp:111", UUID.randomUUID().toString(), 10000);
+//		System.out.println(lock);
 	}
 
 	private static void testRedis(Jedis jedis) {
