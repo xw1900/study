@@ -1,0 +1,19 @@
+volatile可解决可见性问题，性能比synchronized高，但比不加低，因为volatile禁止了重排序。
+synchronized具有可见性，原子性，互斥性
+
+原子性：原子类
+原子类：内部用了volatile，具有内存可见性
+	用了cas算法保证数据的原子性，cas包括三个值，内存值A 预估值B 更新值C 当且仅当V==A时，才把A=C
+i++：底层分三步，不具有原子性
+
+
+concurrentHashMap：线程安全的hash表，采用锁分段机制，只锁片段。同时有复合操作的线程安全方法。。。1.8采用CAS机制，
+hashtable：复合操作非线程安全，if(){put(2...)}  两个操作两把锁
+concurrentSkipListMap -----》 TreeMap
+concurrentSkipListSet
+CopyOnWriteArrayList -----》 ArrayList  读的次数远大于更新时，，适用于读多写少
+CopyOnWriteArraySet -----》 
+
+
+countDownLatch：其他的操作没有完成就等待再执行
+

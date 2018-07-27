@@ -1,0 +1,6 @@
+package com.xw.study.springmvc.service;
+
+public interface TestService {
+
+	void testPrint(long id);
+}
