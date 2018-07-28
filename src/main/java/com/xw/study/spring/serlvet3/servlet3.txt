@@ -1,3 +1,0 @@
-
-Servlet3启动时会扫描当前应用中的每一个jar包的ServletContainerInitializer实现
-前提：必须要在META-INF/services/javax.servlet.ServletContainerInitializer文件中写类的全类名

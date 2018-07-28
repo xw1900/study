@@ -1,8 +1,0 @@
-显示当前使用的shell：
-	# echo ${SHELL}
-显示当前系统使用的所有shell：
-	# cat /etc/shells
-区别内部或外部命令：
-	# type COMMAND		如：type cd（内嵌）  type which等
-取消命令执行：
-	Ctrl+c
