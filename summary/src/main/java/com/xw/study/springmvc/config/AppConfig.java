@@ -6,6 +6,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.DelegatingWebMvcConfiguration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
@@ -14,9 +16,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 @ComponentScan(value = "com.xw.study.springmvc"/*, useDefaultFilters = false, includeFilters = {
 		@Filter(type = FilterType.ANNOTATION, classes = { Controller.class }) }*/)
 //@EnableWebMvc// <mvc:annotation-driven/>
-@Configuration
+@Configuration// 此处的@Configuration 可不写，代码中本来就会把这个类当做配置类
 @PropertySources({ @PropertySource("classpath:properties/redis.properties") })
-public class AppConfig extends WebMvcConfigurationSupport {
+public class AppConfig extends DelegatingWebMvcConfiguration {
 
 	@Override
 	protected void configureViewResolvers(ViewResolverRegistry registry) {

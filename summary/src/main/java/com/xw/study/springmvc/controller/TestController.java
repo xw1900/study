@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
+
 @RestController
 public class TestController extends BaseController {
 
@@ -41,11 +43,19 @@ public class TestController extends BaseController {
 		return "test1";
 	}
 	
+	@RequestMapping("/testjson")
+	public JSONObject testjson(HttpServletResponse response) throws IOException {
+		JSONObject json = new JSONObject();
+		json.put("erpId", 1);
+		return json;
+	}
+	
 	@RequestMapping("/testresponse")
 	public void testresponse(HttpServletResponse response) throws IOException {
-		response.getWriter().println("www.baidu.com");
+		JSONObject json = new JSONObject();
+		json.put("erpId", 1);
+		response.getWriter().println(json.toJSONString());
 		response.getWriter().close();
-//		return "test";
 	}
 	
 	@RequestMapping("/testpeople")

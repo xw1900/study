@@ -2,9 +2,7 @@ package com.xw.study.demo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CollectionDemo {
 
@@ -13,10 +11,18 @@ public class CollectionDemo {
 //		testList2Array();
 //		testArray2List();
 //		testforeach();
-		
+//		testArrayList();
 		
 	}
 	
+	private static void testArrayList() {
+		List<People> resultList = new ArrayList<>();
+		resultList.add(null);
+		if(null!=resultList && !resultList.isEmpty() && null != resultList.get(0)){
+			System.out.println("======" + resultList.get(0).getName());
+		}
+	}
+
 	private static void testforeach() {
 		List<String> list = new ArrayList<String>();
 		list.add("1");
