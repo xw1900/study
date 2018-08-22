@@ -7,7 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public class People {
 
-//	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	private Timestamp birth;
 
 	public Timestamp getBirth() {

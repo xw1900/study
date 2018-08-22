@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.xw</groupId>
+		<groupId>com.xw.study</groupId>
 		<artifactId>study</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
@@ -108,20 +108,6 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-
-			<!-- 通过maven设置eclipse的jdk版本，仅此项目有效，可通过设置maven的settings文件全局有效 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	
 
 </project>

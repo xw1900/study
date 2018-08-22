@@ -88,6 +88,7 @@ zset(sorted set：有序集合)。string类型元素的集合,且不允许重复
 		rename key newkey  -->如果newkey已存在，会覆盖newkey的内容
 	newkey不存在重命名: 
 		renamenx key newkey
+	PERSIST：移除过期时间
 
 String操作：操作的不是String，返回错误
 	设置键值对: 

@@ -78,7 +78,10 @@ spring容器初始化后才会到springmvc容器的初始化，因为tomcat容�
 		13、AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 			会处理一些其他逻辑，primary，Lazy等
 		14、之后会检查候选的 checkCandidate(beanName, candidate)，此处会检查有没有重复注册bean，有会报错	
+			重复注册的bean也有区别，如果是@Component之类的注解，重复bean会报冲突的错
+			如果是@Bean注册的，则只会覆盖。
 		15、接着会处理@Import的，processImports();此时如果有@EnableWebMvc，就会在此时工作，导入一个bean
+			也就是先扫描@ComponentScan，再@Import
 		。。。。。。。。。。。。
 **************************************springmvc容器初始化****************************************
 
