@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	
+	<!-- 使用properties来引入外部配置文件
+		resource：引入类路径下的资源
+		url：引入网络路径或者磁盘路径下的资源 -->
+	<properties resource="dbconfig.properties"></properties>
+	
+	<!-- 设置项 -->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	
+	<!-- 别名，为java类型起别名，别名不区分大小写
+		1、typeAlias 为单个类型起别名，默认是类名小写
+		2、 package 为指定包名起一个默认别名：类名小写
+		3、@Alias("author")注解方式起别名-->
+	<typeAliases>
+		<!-- <typeAlias alias="student" type="com.xw.mybatis.bean.Student"/> -->
+		<package name="com.xw.mybatis.bean"/>
+	</typeAliases>
+
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${db.mysql.driver}" />
+				<property name="url" value="${db.mysql.url}" />
+				<property name="username" value="${db.mysql.username}" />
+				<property name="password" value="${db.mysql.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- 将我们写好的sql映射文件（StudentMapper.xml）一定要注册到全局配置文件（mybatis-config.xml）中 -->
+	<!-- resource：引用类路径下的sql映射文件
+		url：网络or磁盘路径下的sql映射文件
+		class：引用接口
+			有映射文件，文件和接口必须同名且要在同一目录下 -->
+	<mappers>
+		<mapper resource="com/xw/mybatis/mapper/StudentMapper.xml" />
+	</mappers>
+</configuration>
