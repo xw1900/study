@@ -88,10 +88,17 @@ zset(sorted set：有序集合)。string类型元素的集合,且不允许重复
 		rename key newkey  -->如果newkey已存在，会覆盖newkey的内容
 	newkey不存在重命名: 
 		renamenx key newkey
+	PERSIST：移除过期时间
 
 String操作：操作的不是String，返回错误
 	设置键值对: 
 		set myKey abc   -->未设置过期时间，ttl是-1，不会过期。。。设置了expire，超过了时间会过期。
+		SET KEY VALUE [EX seconds] [PX milliseconds] [NX|XX]
+			EX seconds − 设置指定的到期时间(以秒为单位)。
+			PX milliseconds - 设置指定的到期时间(以毫秒为单位)。
+			NX - 仅在键不存在时设置键。
+			XX - 只有在键已存在时才设置。
+			eg：SET mykey "redis" EX 60 NX // 做分布式锁
 	取出键值对: 
 		get myKey		-->key不是字符串，返回错误
 	获取范围: 
