@@ -1,2 +1,149 @@
 ALL IN ONE	复制多个，提高性能，扩展得全部一起部署
 微服务	针对某个服务的瓶颈扩展，每一个功能元素最终都是一个可独立替换和升级的软件单元
+
+<!‐‐ 这个插件，可以将应用打包成一个可执行的jar包；‐‐>
+能够以Maven的方式为应用提供Spring Boot的支持，即为Spring Boot应用提供了执行Maven操作的可能。
+不然打包只会按maven默认的方式，加了插件可以打jar，war等等
+<build>
+<plugins>
+<plugin>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring-boot-maven-plugin</artifactId>
+</plugin>
+</plugins>
+</build>
+
+以后我们导入依赖默认是不需要写版本；父项目中都已经管理好了
+<parent>
+<groupId>org.springframework.boot</groupId>
+<artifactId>spring‐boot‐starter‐parent</artifactId>
+<version>1.5.9.RELEASE</version>
+</parent>
+
+启动器
+Spring Boot将所有的功能场景都抽取出来，做成一个个的starters（启动器），只需要在项目里面引入这些starter
+相关场景的所有依赖都会导入进来。要用什么功能就导入什么场景的启动器
+spring-boot-starter-web：帮我们导入了web模块正常运行所依赖的组件；
+
+主入口
+@SpringBootApplication：springboot的配置类
+@EnableAutoConfiguration：开启自动配置功能；以前springmvc注解配置的时候，需要继承WebMvcConfigurationSupport，需要配置扫描类等等，
+	自动配置都已经处理好了
+	@AutoConfigurationPackage：自动配置包
+		@Import(AutoConfigurationPackages.Registrar.class)给容器中导入了AutoConfigurationPackages.Registrar.class
+			根据条件导入需要的：AutoConfigurationPackages.Registrar.class是ImportBeanDefinitionRegistrar:手动注册bean到容器中
+			作用：将@SpringBootApplication的所在类包及子包的所有组件包含到spring需要扫描的目录中。
+	@Import(EnableAutoConfigurationImportSelector.class)
+		手动导入需要的组件，将所有需要导入的组件以全类名导入，导入了很多（上百个）自动配置类（xxxAutoConfiguration）
+		自动配置类（xxxAutoConfiguration）:给容器中导入这个场景所需要的所有组件，在后面需要的时候，我们加上注解就可以让这些自动配置类生效了
+			所有jar包类路径下META-INF/spring.factories中获取EnableAutoConfiguration指定的值（在spring-boot-autoconfigure-1.5.9.RELEASE.jar）
+		例子：HttpEncodingAutoConfiguration
+	自动配置类必须在一定的条件下才能生效；@Conditional
+			
+			
+			
+			
+默认生成的Spring Boot项目；
+主程序已经生成好了，我们只需要我们自己的逻辑
+	resources文件夹中目录结构
+		static：保存所有的静态资源； js css images；
+		templates：保存所有的模板页面；（Spring Boot默认jar包使用嵌入式的Tomcat，默认不支持JSP页面）；可以使用模板引擎（freemarker、thymeleaf）；
+		application.properties：Spring Boot应用的配置文件；可以修改一些默认设置；
+	
+************************ 配置 ************************	
+k: v：字面直接来写；
+	字符串默认不用加上单引号或者双引号；
+	""：双引号；不会转义字符串里面的特殊字符；特殊字符会作为本身想表示的意思
+		name: "zhangsan \n lisi"：输出；zhangsan 换行 lisi
+	''：单引号；会转义特殊字符，特殊字符最终只是一个普通的字符串数据
+		name: ‘zhangsan \n lisi’：输出；zhangsan \n lisi
+
+@ConfigurationProperties：告诉SpringBoot将本类中的所有属性和配置文件中相关的配置进行绑定；
+	prefix = "person"：配置文件中哪个下面的所有属性进行一一映射
+	
+<!‐‐导入配置文件处理器，配置文件进行绑定就会有提示‐‐>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring‐boot‐configuration‐processor</artifactId>
+	<optional>true</optional>
+</dependency>
+
+properties配置文件在idea中默认utf-8可能会乱码
+
+			@ConfigurationProperties 		@Value
+功能 			批量注入配置文件中的属性 				一个个指定
+松散绑定（松散语法） 	支持 							不支持
+SpEL 			不支持 						支持
+JSR303数据校验 		支持 							不支持
+复杂类型封装		 支持 							不支持
+
+如果说，我们只是在某个业务逻辑中需要获取一下配置文件中的某项值，使用@Value；
+如果说，我们专门编写了一个javaBean来和配置文件进行映射，我们就直接使用@ConfigurationProperties；
+
+配置文件加载位置
+	–file:./config/
+	–file:./
+	–classpath:/config/
+	–classpath:/
+	优先级由高到底，高优先级的配置会覆盖低优先级的配置；
+通过spring.config.location来改变默认的配置文件位置
+
+
+SpringBoot也可以从以下位置加载配置； 优先级从高到低；高优先级的配置覆盖低优先级的配置，所有的配置会形成互补配置
+	1.命令行参数
+	所有的配置都可以在命令行上进行指定
+	java -jar spring-boot-02-config-02-0.0.1-SNAPSHOT.jar --server.port=8087 --server.context-path=/abc
+	多个配置用空格分开； --配置项=值
+	2.来自java:comp/env的JNDI属性
+	3.Java系统属性（System.getProperties()）
+	4.操作系统环境变量
+	5.RandomValuePropertySource配置的random.*属性值
+	由jar包外向jar包内进行寻找；
+	优先加载带profile
+	6.jar包外部的application-{profile}.properties或application.yml(带spring.profile)配置文件
+	7.jar包内部的application-{profile}.properties或application.yml(带spring.profile)配置文件
+	再来加载不带profile
+	8.jar包外部的application.properties或application.yml(不带spring.profile)配置文件
+	9.jar包内部的application.properties或application.yml(不带spring.profile)配置文件
+	10.@Configuration注解类上的@PropertySource
+	11.通过SpringApplication.setDefaultProperties指定的默认属性
+
+
+
+日志：
+	日志记录方法的调用，不应该来直接调用日志的实现类，而是调用日志抽象层里面的方法；给系统里面导入slf4j的jar和 logback的实现jar
+	如何让系统中所有的日志都统一到slf4j；
+		1、将系统中其他日志框架先排除出去；
+		2、用中间包来替换原有的日志框架；
+		3、我们导入slf4j其他的实现
+	SpringBoot能自动适配所有的日志，而且底层使用slf4j+logback的方式记录日志，引入其他框架的时候，只需要把这个框架依赖的日志框架排除掉即可；
+	可以调整输出的日志级别；日志就只会在这个级别以以后的高级别生效
+	SpringBoot默认给我们使用的是info级别的，没有指定级别的就用SpringBoot默认规定的级别；root级别
+logback.xml：直接就被日志框架识别了；
+logback-spring.xml：日志框架就不直接加载日志的配置项，由SpringBoot解析日志配置，可以使用SpringBoot的高级Profile功能	
+
+
+Web开发
+	xxxxAutoConfiguration：帮我们给容器中自动配置组件；
+	xxxxProperties:配置类来封装配置文件的内容；
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
