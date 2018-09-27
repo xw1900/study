@@ -1,8 +1,16 @@
 package com.xw.study.demo;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
 
 public class CollectionDemo {
 
@@ -12,9 +20,27 @@ public class CollectionDemo {
 //		testArray2List();
 //		testforeach();
 //		testArrayList();
+
+//		testSet();
+		testStack();
+		BigDecimal  aaa = null;
+		BigDecimal  thePrice = Optional.ofNullable(aaa).orElse(BigDecimal.ZERO);
+		BigDecimal  thePrice2= new BigDecimal(0);
+	    
+	    System.out.println(thePrice.compareTo(thePrice2));
 		
 	}
 	
+	private static void testStack() {
+		Stack<String> stack = new Stack<>();
+	}
+
+	private static void testSet() {
+//		Set<String> set = new HashSet<>();
+		Set<String> set = new TreeSet<>();
+		
+	}
+
 	private static void testArrayList() {
 		List<People> resultList = new ArrayList<>();
 		resultList.add(null);
