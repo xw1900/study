@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xw.mybatis.dao.WebsiteContentMapper">
+  <resultMap id="BaseResultMap" type="com.xw.mybatis.bean.WebsiteContent">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="nav_id" jdbcType="BIGINT" property="navId" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="second_title" jdbcType="VARCHAR" property="secondTitle" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="content" jdbcType="OTHER" property="content" />
+    <result column="img_url" jdbcType="VARCHAR" property="imgUrl" />
+    <result column="link_id" jdbcType="BIGINT" property="linkId" />
+    <result column="link_url" jdbcType="VARCHAR" property="linkUrl" />
+    <result column="sort" jdbcType="BIGINT" property="sort" />
+    <result column="tags" jdbcType="VARCHAR" property="tags" />
+    <result column="is_show" jdbcType="INTEGER" property="isShow" />
+    <result column="show_time" jdbcType="TIMESTAMP" property="showTime" />
+    <result column="create_by" jdbcType="BIGINT" property="createBy" />
+    <result column="create_by_name" jdbcType="VARCHAR" property="createByName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_by" jdbcType="BIGINT" property="updateBy" />
+    <result column="update_by_name" jdbcType="VARCHAR" property="updateByName" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    id, nav_id, title, second_title, description, content, img_url, link_id, link_url, tags,
+    sort, is_show, show_time, create_by, create_by_name, create_time, update_by, 
+    update_by_name, update_time, is_del
+  </sql>
+  
+  <resultMap id="testCollectionsResultMap" type="com.xw.mybatis.bean.WebsiteContent">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="nav_id" jdbcType="BIGINT" property="navId" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="second_title" jdbcType="VARCHAR" property="secondTitle" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="content" jdbcType="OTHER" property="content" />
+    <result column="img_url" jdbcType="VARCHAR" property="imgUrl" />
+    <result column="link_id" jdbcType="BIGINT" property="linkId" />
+    <result column="link_url" jdbcType="VARCHAR" property="linkUrl" />
+    <result column="sort" jdbcType="BIGINT" property="sort" />
+    <result column="tags" jdbcType="VARCHAR" property="tags" />
+    <result column="is_show" jdbcType="INTEGER" property="isShow" />
+    <result column="show_time" jdbcType="TIMESTAMP" property="showTime" />
+    <result column="create_by" jdbcType="BIGINT" property="createBy" />
+    <result column="create_by_name" jdbcType="VARCHAR" property="createByName" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_by" jdbcType="BIGINT" property="updateBy" />
+    <result column="update_by_name" jdbcType="VARCHAR" property="updateByName" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="is_del" jdbcType="INTEGER" property="isDel" />
+	<collection property="tagContents" ofType="com.xw.mybatis.bean.WebsiteTagContent">
+	    <id column="tag_id" jdbcType="BIGINT" property="tagId" />
+	    <id column="content_id" jdbcType="BIGINT" property="contentId" />
+    </collection>
+  </resultMap>
+  
+  	<select id="testCollections" resultMap="testCollectionsResultMap">
+  		select * from website_content wc LEFT JOIN website_tag_content wac ON wc.id = wac.content_id;
+  		
+  	</select>
+
+	<select id="queryBaseByCondition" parameterType="com.xw.mybatis.search.WebsiteContentSearch"
+		resultMap="BaseResultMap">
+		select id, nav_id, title, second_title, description,tags,
+		json_build_object('top',content->'top') as content,
+		img_url, link_id, link_url, sort, is_show, show_time, create_by,
+		create_by_name, create_time, update_by,
+		update_by_name, update_time, is_del from website_content
+		<where>
+
+	       <if test=" contentIds != null and contentIds.size > 0 ">
+		      and id in
+		      <foreach collection="contentIds" item="contentId" open="("
+			     separator="," close=")">
+			     #{contentId}
+		      </foreach>
+	       </if>
+		
+			<if test="navId !=null">
+				and nav_id=#{navId}
+			</if>
+
+			and is_show = 1 and is_del = 0
+		</where>
+
+		<choose>
+			<when test="orderBy != null and orderBy !=''">
+				order by #{orderBy}
+			</when>
+			<otherwise>
+				order by sort desc
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

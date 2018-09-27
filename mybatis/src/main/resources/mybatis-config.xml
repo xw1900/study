@@ -28,7 +28,8 @@
 			<transactionManager type="JDBC" />
 			<dataSource type="POOLED">
 				<property name="driver" value="${db.mysql.driver}" />
-				<property name="url" value="${db.mysql.url}" />
+				<property name="url"
+					value="${db.mysql.url}" />
 				<property name="username" value="${db.mysql.username}" />
 				<property name="password" value="${db.mysql.password}" />
 			</dataSource>
@@ -41,6 +42,6 @@
 		class：引用接口
 			有映射文件，文件和接口必须同名且要在同一目录下 -->
 	<mappers>
-		<mapper resource="com/xw/mybatis/mapper/StudentMapper.xml" />
+		<package name="com.xw.mybatis.dao"/>
 	</mappers>
 </configuration>
