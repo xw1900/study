@@ -13,5 +13,7 @@ public class Child extends Father {
 	public static void main(String[] args) {
 		System.out.println("main方法开始！！！！！！！！！！！！！");
 		Child child = new Child();
+		System.out.println("第二次初始化----------");
+		Child child2 = new Child();
 	}
 }
