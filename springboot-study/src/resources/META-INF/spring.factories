@@ -1,0 +1,5 @@
+org.springframework.boot.SpringApplicationRunListener=\
+com.xw.springbootstudy.runlistener.MyRunListener
+
+org.springframework.context.ApplicationContextInitializer=\
+com.xw.springbootstudy.applicationcontextinitializer.MyApplicationContextInitializer
