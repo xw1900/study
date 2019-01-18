@@ -39,8 +39,30 @@ public class MybatisDemo {
 		SqlSession session = sqlSessionFactory.openSession();
 		try {
 			StudentMapper studentMapper = session.getMapper(StudentMapper.class);
-			Student student = studentMapper.selectStudentByCondition("S001", "8888");
+			Student student = studentMapper.selectStudentByCondition("xiao", "wang");
 			System.out.println(student);
+		} finally {
+			session.close();
+		}
+
+	}
+	
+	@Test
+	public void test3() throws IOException {
+		String resource = "mybatis-config.xml";
+		InputStream inputStream = Resources.getResourceAsStream(resource);
+		SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+
+		SqlSession session = sqlSessionFactory.openSession();
+		try {
+			StudentMapper studentMapper = session.getMapper(StudentMapper.class);
+			Student student = new Student();
+			student.setStatus(true);
+			student.setStudentno("xiao");
+			student.setLoginpwd("wang");
+			int i = studentMapper.updateById(student);
+			System.out.println(i);
+			session.commit();
 		} finally {
 			session.close();
 		}

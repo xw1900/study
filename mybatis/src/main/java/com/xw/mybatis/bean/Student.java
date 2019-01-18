@@ -12,14 +12,14 @@ import lombok.experimental.Accessors;
 @Accessors(chain=true)
 public class Student {
 
-	private String studentNo;
+	private String studentno;
 	private String studentName;
-	private String loginPwd;
+	private String loginpwd;
 	private String sex;
 	private int majorId;
 	private String phone;
 	private String email;
 	private Date bornDate;
-	
+	private Boolean status;
 	
 }

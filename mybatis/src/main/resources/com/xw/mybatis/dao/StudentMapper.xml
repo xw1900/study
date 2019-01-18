@@ -12,4 +12,12 @@
 		select * from student
 		where studentno = #{studentno} and loginpwd = #{loginpwd}
 	</select>
+	
+	<update id="updateById" parameterType="Object">
+    update student set 
+    <if test="status!=null">
+      status = #{status,jdbcType=BIT}
+    </if>
+		where studentno = #{studentno} and loginpwd = #{loginpwd}
+  </update>
 </mapper>
