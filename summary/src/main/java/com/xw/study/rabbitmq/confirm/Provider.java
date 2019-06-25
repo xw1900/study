@@ -1,0 +1,46 @@
+package com.xw.study.rabbitmq.confirm;
+
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.ConfirmListener;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
+public class Provider {
+
+	public static void main(String[] args) throws Exception {
+		ConnectionFactory connectionFactory = new ConnectionFactory();
+		connectionFactory.setHost("192.168.31.100");
+		connectionFactory.setPort(5672);
+		connectionFactory.setUsername("root");
+		connectionFactory.setPassword("vincent");
+		connectionFactory.setVirtualHost("my_vhost");
+		
+		Connection connection = connectionFactory.newConnection();
+		Channel channel = connection.createChannel();
+		
+		channel.confirmSelect();
+		channel.addConfirmListener(new ConfirmListener() {
+			
+			@Override
+			public void handleNack(long deliveryTag, boolean multiple) throws IOException {
+				System.out.println("-----handleNack-----");
+			}
+			
+			@Override
+			public void handleAck(long deliveryTag, boolean multiple) throws IOException {
+				System.out.println("-----handleAck-----");
+			}
+		});
+		
+		String exchangeName = "amq.topic";
+		String routingkey = "routingkey003.gg";
+		String message = "routingkey003.ggg";
+		channel.basicPublish(exchangeName, routingkey, null, message.getBytes());
+		
+//		channel.close();
+//		connection.close();
+	}
+}

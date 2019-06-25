@@ -39,6 +39,7 @@ public class ConcurrencyTest_atomic {
 	}
 	
 	public static void add(){
+		System.out.println("1");
 		count.addAndGet(1);
 	}
 }
